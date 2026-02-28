@@ -243,7 +243,7 @@ struct RedemptionHistoryView: View {
                                     .font(.subheadline.bold())
                                     .foregroundColor(.white)
 
-                                Text(redemption.redeemedAt, style: .date)
+                                Text(redemption.redeemedAt ?? Date(), style: .date)
                                     .font(.caption)
                                     .foregroundColor(GTTheme.textSecondary)
                             }

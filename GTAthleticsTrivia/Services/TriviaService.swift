@@ -1,6 +1,16 @@
 import Foundation
 import Supabase
 
+private struct IncrementPointsParams: Encodable {
+    let userIdInput: String
+    let pointsInput: Int
+
+    enum CodingKeys: String, CodingKey {
+        case userIdInput = "user_id_input"
+        case pointsInput = "points_input"
+    }
+}
+
 // MARK: - Trivia Service (Supabase)
 @MainActor
 class TriviaService: ObservableObject {
@@ -85,7 +95,7 @@ class TriviaService: ObservableObject {
 
         // Update user points if correct
         if points > 0 {
-            try await supabase.rpc("increment_points", params: ["user_id_input": userId, "points_input": points]).execute()
+            try await supabase.rpc("increment_points", params: IncrementPointsParams(userIdInput: userId, pointsInput: points)).execute()
         }
 
         return (isCorrect, points)

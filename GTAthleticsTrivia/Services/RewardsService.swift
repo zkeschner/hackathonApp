@@ -1,6 +1,16 @@
 import Foundation
 import Supabase
 
+private struct IncrementPointsParams: Encodable {
+    let userIdInput: String
+    let pointsInput: Int
+
+    enum CodingKeys: String, CodingKey {
+        case userIdInput = "user_id_input"
+        case pointsInput = "points_input"
+    }
+}
+
 // MARK: - Rewards Service (Supabase)
 @MainActor
 class RewardsService: ObservableObject {
@@ -78,7 +88,7 @@ class RewardsService: ObservableObject {
         }
 
         // Deduct points
-        try await supabase.rpc("increment_points", params: ["user_id_input": user.id, "points_input": -reward.pointCost]).execute()
+        try await supabase.rpc("increment_points", params: IncrementPointsParams(userIdInput: user.id, pointsInput: -reward.pointCost)).execute()
 
         // Refresh local data
         await fetchRewards()
