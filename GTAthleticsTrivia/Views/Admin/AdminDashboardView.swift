@@ -212,7 +212,7 @@ struct AdminVideosView: View {
                 }
             }
 
-            Text("Q: \(video.question.questionText)")
+            Text("Q: \(video.questionText)")
                 .font(.caption)
                 .foregroundColor(GTTheme.textSecondary)
                 .lineLimit(1)
@@ -316,7 +316,7 @@ struct AdminRewardsView: View {
                     .foregroundColor(.white)
 
                 HStack(spacing: 8) {
-                    Text(reward.category.rawValue)
+                    Text(reward.category)
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -350,8 +350,12 @@ struct AdminRewardsView: View {
 struct AdminStatsView: View {
     @ObservedObject var authService = AuthService.shared
 
-    var allUsers: [AppUser] {
-        authService.getAllUsers()
+    @State private var allUsers: [AppUser] = []
+
+    func loadUsers() {
+        Task {
+            allUsers = (try? await authService.getAllUsers()) ?? []
+        }
     }
 
     var body: some View {
@@ -372,6 +376,7 @@ struct AdminStatsView: View {
                 statCard(title: "Videos", value: "\(TriviaService.shared.videos.count)", icon: "film")
                 statCard(title: "Rewards", value: "\(RewardsService.shared.rewards.count)", icon: "gift.fill")
             }
+            .task { loadUsers() }
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("ALL USERS")

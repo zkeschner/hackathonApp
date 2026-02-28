@@ -60,8 +60,8 @@ struct LeaderboardView: View {
                 .padding(.horizontal, 20)
             }
         }
-        .onAppear {
-            users = authService.getAllUsers()
+        .task {
+            users = (try? await authService.getAllUsers()) ?? []
         }
     }
 

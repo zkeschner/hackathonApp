@@ -84,12 +84,12 @@ struct TriviaView: View {
                 .font(.title2.bold())
                 .foregroundColor(.white)
 
-            Text("Watch the video above, then tap below to see the trivia question. You'll have \(video.question.timeLimitSeconds) seconds to answer!")
+            Text("Watch the video above, then tap below to see the trivia question. You'll have \(video.timeLimitSeconds) seconds to answer!")
                 .font(.subheadline)
                 .foregroundColor(GTTheme.textSecondary)
                 .multilineTextAlignment(.center)
 
-            Text("\(video.question.pointValue) points available")
+            Text("\(video.pointValue) points available")
                 .font(.caption.bold())
                 .foregroundColor(GTTheme.techGold)
 
@@ -120,14 +120,14 @@ struct TriviaView: View {
             .animation(.easeInOut, value: triviaVM.timeRemaining)
 
             // Question
-            Text(video.question.questionText)
+            Text(video.questionText)
                 .font(.title3.bold())
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
 
             // Options
             VStack(spacing: 12) {
-                ForEach(Array(video.question.options.enumerated()), id: \.offset) { index, option in
+                ForEach(Array(video.options.enumerated()), id: \.offset) { index, option in
                     Button(action: {
                         triviaVM.submitAnswer(selectedIndex: index)
                     }) {
@@ -182,12 +182,12 @@ struct TriviaView: View {
 
             // Show correct answer
             VStack(spacing: 12) {
-                Text(video.question.questionText)
+                Text(video.questionText)
                     .font(.headline)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
 
-                ForEach(Array(video.question.options.enumerated()), id: \.offset) { index, option in
+                ForEach(Array(video.options.enumerated()), id: \.offset) { index, option in
                     HStack {
                         Text(optionLetter(index))
                             .font(.caption.bold())
@@ -201,7 +201,7 @@ struct TriviaView: View {
 
                         Spacer()
 
-                        if index == video.question.correctAnswerIndex {
+                        if index == video.correctAnswerIndex {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(GTTheme.success)
                         } else if index == triviaVM.selectedAnswer {
@@ -231,7 +231,7 @@ struct TriviaView: View {
     }
 
     private func optionColor(_ index: Int) -> Color {
-        if index == video.question.correctAnswerIndex {
+        if index == video.correctAnswerIndex {
             return GTTheme.success
         } else if index == triviaVM.selectedAnswer {
             return GTTheme.error
@@ -240,7 +240,7 @@ struct TriviaView: View {
     }
 
     private func answerBackground(_ index: Int) -> Color {
-        if index == video.question.correctAnswerIndex {
+        if index == video.correctAnswerIndex {
             return GTTheme.success.opacity(0.15)
         } else if index == triviaVM.selectedAnswer {
             return GTTheme.error.opacity(0.15)
@@ -263,11 +263,9 @@ extension Array {
                 title: "Sample Trivia",
                 videoURL: "",
                 scheduledTime: Date(),
-                question: TriviaQuestion(
-                    questionText: "What color is Tech Gold?",
-                    options: ["Blue", "Gold", "Red", "Green"],
-                    correctAnswerIndex: 1
-                ),
+                questionText: "What color is Tech Gold?",
+                options: ["Blue", "Gold", "Red", "Green"],
+                correctAnswerIndex: 1,
                 uploadedBy: "admin"
             ),
             triviaVM: TriviaViewModel()

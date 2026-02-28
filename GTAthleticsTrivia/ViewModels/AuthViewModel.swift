@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 
 // MARK: - Auth ViewModel
+@MainActor
 class AuthViewModel: ObservableObject {
     @Published var email = ""
     @Published var password = ""
@@ -31,14 +32,15 @@ class AuthViewModel: ObservableObject {
         isLoading = true
         errorMessage = ""
 
-        do {
-            try authService.signIn(email: email, password: password)
-            clearFields()
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            do {
+                try await authService.signIn(email: email, password: password)
+                clearFields()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
         }
-
-        isLoading = false
     }
 
     func signUp() {
@@ -60,14 +62,15 @@ class AuthViewModel: ObservableObject {
         isLoading = true
         errorMessage = ""
 
-        do {
-            try authService.signUp(email: email, password: password, displayName: displayName, isAdmin: isAdmin)
-            clearFields()
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            do {
+                try await authService.signUp(email: email, password: password, displayName: displayName, isAdmin: isAdmin)
+                clearFields()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
         }
-
-        isLoading = false
     }
 
     func signOut() {

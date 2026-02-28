@@ -1,121 +1,98 @@
 import Foundation
+import Supabase
 
-// MARK: - Auth Service (Local mock — swap for Firebase/Supabase)
+// MARK: - Auth Service (Supabase)
+@MainActor
 class AuthService: ObservableObject {
     static let shared = AuthService()
 
     @Published var currentUser: AppUser?
     @Published var isAuthenticated = false
 
-    private let usersKey = "gt_athletics_users"
-    private let currentUserKey = "gt_athletics_current_user"
-
     init() {
-        loadCurrentUser()
+        Task { await restoreSession() }
     }
 
     // MARK: - Sign Up
-    func signUp(email: String, password: String, displayName: String, isAdmin: Bool = false) throws {
-        var users = loadAllUsers()
+    func signUp(email: String, password: String, displayName: String, isAdmin: Bool = false) async throws {
+        let authResponse = try await supabase.auth.signUp(email: email, password: password)
+        let userId = authResponse.user.id.uuidString
 
-        if users.contains(where: { $0.email.lowercased() == email.lowercased() }) {
-            throw AuthError.emailAlreadyInUse
-        }
-
-        let newUser = AppUser(
+        let profile = AppUser(
+            id: userId,
             email: email,
             displayName: displayName,
             points: 0,
             isAdmin: isAdmin
         )
 
-        users.append(newUser)
-        saveAllUsers(users)
-        saveCredentials(email: email, password: password)
+        try await supabase.from("profiles").insert(profile).execute()
 
-        currentUser = newUser
+        currentUser = profile
         isAuthenticated = true
-        saveCurrentUser(newUser)
     }
 
     // MARK: - Sign In
-    func signIn(email: String, password: String) throws {
-        let users = loadAllUsers()
-
-        guard let user = users.first(where: { $0.email.lowercased() == email.lowercased() }) else {
-            throw AuthError.userNotFound
-        }
-
-        let storedPassword = UserDefaults.standard.string(forKey: "pwd_\(email.lowercased())")
-        guard storedPassword == password else {
-            throw AuthError.wrongPassword
-        }
-
-        currentUser = user
-        isAuthenticated = true
-        saveCurrentUser(user)
+    func signIn(email: String, password: String) async throws {
+        try await supabase.auth.signIn(email: email, password: password)
+        try await loadProfile()
     }
 
     // MARK: - Sign Out
     func signOut() {
-        currentUser = nil
-        isAuthenticated = false
-        UserDefaults.standard.removeObject(forKey: currentUserKey)
+        Task {
+            try? await supabase.auth.signOut()
+            currentUser = nil
+            isAuthenticated = false
+        }
     }
 
     // MARK: - Update User
-    func updateUser(_ user: AppUser) {
-        var users = loadAllUsers()
-        if let index = users.firstIndex(where: { $0.id == user.id }) {
-            users[index] = user
-            saveAllUsers(users)
-        }
+    func updateUser(_ user: AppUser) async throws {
+        try await supabase.from("profiles")
+            .update(user)
+            .eq("id", value: user.id)
+            .execute()
+
         if currentUser?.id == user.id {
             currentUser = user
-            saveCurrentUser(user)
         }
     }
 
     // MARK: - Get All Users (for leaderboard)
-    func getAllUsers() -> [AppUser] {
-        return loadAllUsers()
-    }
-
-    // MARK: - Private Helpers
-    private func loadCurrentUser() {
-        guard let data = UserDefaults.standard.data(forKey: currentUserKey),
-              let user = try? JSONDecoder().decode(AppUser.self, from: data) else { return }
-
-        // Refresh from stored users to get latest points
-        let users = loadAllUsers()
-        if let freshUser = users.first(where: { $0.id == user.id }) {
-            currentUser = freshUser
-        } else {
-            currentUser = user
-        }
-        isAuthenticated = true
-    }
-
-    private func saveCurrentUser(_ user: AppUser) {
-        if let data = try? JSONEncoder().encode(user) {
-            UserDefaults.standard.set(data, forKey: currentUserKey)
-        }
-    }
-
-    private func loadAllUsers() -> [AppUser] {
-        guard let data = UserDefaults.standard.data(forKey: usersKey),
-              let users = try? JSONDecoder().decode([AppUser].self, from: data) else { return [] }
+    func getAllUsers() async throws -> [AppUser] {
+        let users: [AppUser] = try await supabase.from("profiles")
+            .select()
+            .order("points", ascending: false)
+            .execute()
+            .value
         return users
     }
 
-    private func saveAllUsers(_ users: [AppUser]) {
-        if let data = try? JSONEncoder().encode(users) {
-            UserDefaults.standard.set(data, forKey: usersKey)
+    // MARK: - Restore Session
+    private func restoreSession() async {
+        do {
+            _ = try await supabase.auth.session
+            try await loadProfile()
+        } catch {
+            // No valid session
+            isAuthenticated = false
         }
     }
 
-    private func saveCredentials(email: String, password: String) {
-        UserDefaults.standard.set(password, forKey: "pwd_\(email.lowercased())")
+    // MARK: - Load Profile
+    private func loadProfile() async throws {
+        guard let userId = try? await supabase.auth.session.user.id else { return }
+
+        let profile: AppUser = try await supabase.from("profiles")
+            .select()
+            .eq("id", value: userId.uuidString)
+            .single()
+            .execute()
+            .value
+
+        currentUser = profile
+        isAuthenticated = true
     }
 }
 

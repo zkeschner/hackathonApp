@@ -165,7 +165,7 @@ struct ProfileView: View {
                     Divider()
                         .frame(height: 40)
                         .background(GTTheme.textSecondary.opacity(0.3))
-                    profileStat(value: "\(authService.currentUser?.weeklyScores.count ?? 0)", label: "Weeks")
+                    profileStat(value: "—", label: "Weeks")
                 }
                 .gtCard()
 

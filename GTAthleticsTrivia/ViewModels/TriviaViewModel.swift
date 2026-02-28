@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 
 // MARK: - Trivia ViewModel
+@MainActor
 class TriviaViewModel: ObservableObject {
     @Published var activeVideo: TriviaVideo?
     @Published var selectedAnswer: Int? = nil
@@ -26,27 +27,32 @@ class TriviaViewModel: ObservableObject {
     }
 
     func loadActiveVideo() {
-        activeVideo = triviaService.getActiveVideo()
-        if let video = activeVideo, let user = authService.currentUser {
-            hasAnswered = triviaService.hasAnswered(userId: user.id, videoId: video.id)
+        Task {
+            await triviaService.fetchVideos()
+            activeVideo = triviaService.getActiveVideo()
+            if let video = activeVideo, let user = authService.currentUser {
+                hasAnswered = await triviaService.hasAnswered(userId: user.id, videoId: video.id)
+            }
         }
     }
 
     func startTimer() {
         guard let video = activeVideo else { return }
-        timeRemaining = video.question.timeLimitSeconds
+        timeRemaining = video.timeLimitSeconds
         isTimerActive = true
 
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            if self.timeRemaining > 0 {
-                self.timeRemaining -= 1
-            } else {
-                self.timer?.invalidate()
-                self.isTimerActive = false
-                if !self.hasAnswered {
-                    self.submitAnswer(selectedIndex: -1) // Time expired
+            Task { @MainActor in
+                guard let self = self else { return }
+                if self.timeRemaining > 0 {
+                    self.timeRemaining -= 1
+                } else {
+                    self.timer?.invalidate()
+                    self.isTimerActive = false
+                    if !self.hasAnswered {
+                        self.submitAnswer(selectedIndex: -1)
+                    }
                 }
             }
         }
@@ -59,23 +65,28 @@ class TriviaViewModel: ObservableObject {
         timer?.invalidate()
         isTimerActive = false
 
-        let result = triviaService.submitAnswer(
-            userId: user.id,
-            videoId: video.id,
-            questionId: video.question.id,
-            selectedIndex: selectedIndex
-        )
+        Task {
+            do {
+                let result = try await triviaService.submitAnswer(
+                    userId: user.id,
+                    videoId: video.id,
+                    selectedIndex: selectedIndex
+                )
 
-        isCorrect = result.correct
-        pointsEarned = result.points
-        hasAnswered = true
-        showResult = true
+                isCorrect = result.correct
+                pointsEarned = result.points
+                hasAnswered = true
+                showResult = true
 
-        // Update user points
-        if result.points > 0 {
-            var updatedUser = user
-            updatedUser.points += result.points
-            authService.updateUser(updatedUser)
+                // Refresh user profile to get updated points
+                if result.points > 0 {
+                    var updatedUser = user
+                    updatedUser.points += result.points
+                    authService.currentUser = updatedUser
+                }
+            } catch {
+                print("Error submitting answer: \(error)")
+            }
         }
     }
 

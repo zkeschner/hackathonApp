@@ -191,11 +191,12 @@ struct RewardCard: View {
 
     var categoryIcon: String {
         switch reward.category {
-        case .merchandise: return "tshirt.fill"
-        case .tickets: return "ticket.fill"
-        case .experiences: return "star.circle.fill"
-        case .food: return "fork.knife"
-        case .digital: return "iphone"
+        case "Merchandise": return "tshirt.fill"
+        case "Tickets": return "ticket.fill"
+        case "Experiences": return "star.circle.fill"
+        case "Food": return "fork.knife"
+        case "Digital": return "iphone"
+        default: return "gift.fill"
         }
     }
 }
@@ -254,7 +255,7 @@ struct RedemptionHistoryView: View {
                                     .font(.caption.bold())
                                     .foregroundColor(GTTheme.techGold)
 
-                                Text(redemption.status.rawValue)
+                                Text(redemption.status)
                                     .font(.caption2)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 2)
@@ -271,11 +272,12 @@ struct RedemptionHistoryView: View {
         }
     }
 
-    private func statusColor(_ status: RedemptionStatus) -> Color {
+    private func statusColor(_ status: String) -> Color {
         switch status {
-        case .pending: return .orange
-        case .fulfilled: return GTTheme.success
-        case .cancelled: return GTTheme.error
+        case "pending": return .orange
+        case "fulfilled": return GTTheme.success
+        case "cancelled": return GTTheme.error
+        default: return GTTheme.textSecondary
         }
     }
 }

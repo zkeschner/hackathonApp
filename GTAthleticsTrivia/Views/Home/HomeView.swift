@@ -130,7 +130,7 @@ struct HomeView: View {
                             .lineLimit(2)
 
                         HStack {
-                            Label("\(video.question.pointValue) pts", systemImage: "star.fill")
+                            Label("\(video.pointValue) pts", systemImage: "star.fill")
                                 .font(.caption)
                                 .foregroundColor(GTTheme.techGold)
 
@@ -141,7 +141,7 @@ struct HomeView: View {
                                     .font(.caption)
                                     .foregroundColor(GTTheme.success)
                             } else {
-                                Label("\(video.question.timeLimitSeconds)s Timer", systemImage: "timer")
+                                Label("\(video.timeLimitSeconds)s Timer", systemImage: "timer")
                                     .font(.caption)
                                     .foregroundColor(GTTheme.textSecondary)
                             }
@@ -205,7 +205,7 @@ struct HomeView: View {
 
                         Spacer()
 
-                        Text("\(video.question.pointValue) pts")
+                        Text("\(video.pointValue) pts")
                             .font(.caption.bold())
                             .foregroundColor(GTTheme.techGold)
                     }

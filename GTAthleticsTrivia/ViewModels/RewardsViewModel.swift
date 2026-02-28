@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 
 // MARK: - Rewards ViewModel
+@MainActor
 class RewardsViewModel: ObservableObject {
     @Published var selectedCategory: RewardCategory? = nil
     @Published var showRedeemConfirmation = false
@@ -20,27 +21,33 @@ class RewardsViewModel: ObservableObject {
     }
 
     var userRedemptions: [Redemption] {
-        guard let userId = AuthService.shared.currentUser?.id else { return [] }
-        return rewardsService.getRedemptions(for: userId)
+        return rewardsService.redemptions
+    }
+
+    func loadRedemptions() {
+        guard let userId = AuthService.shared.currentUser?.id else { return }
+        Task { await rewardsService.fetchRedemptions(for: userId) }
     }
 
     func redeemReward(_ reward: Reward) {
         guard let user = AuthService.shared.currentUser else { return }
 
-        let result = rewardsService.redeemReward(reward, for: user)
-        switch result {
-        case .success:
-            redemptionMessage = "Successfully redeemed \(reward.name)! 🎉"
-            isSuccess = true
-        case .failure(let error):
-            redemptionMessage = error.localizedDescription
-            isSuccess = false
+        Task {
+            do {
+                try await rewardsService.redeemReward(reward, for: user)
+                redemptionMessage = "Successfully redeemed \(reward.name)! 🎉"
+                isSuccess = true
+            } catch {
+                redemptionMessage = error.localizedDescription
+                isSuccess = false
+            }
+            showMessage = true
         }
-        showMessage = true
     }
 }
 
 // MARK: - Admin ViewModel
+@MainActor
 class AdminViewModel: ObservableObject {
     @Published var videoTitle = ""
     @Published var videoDescription = ""
@@ -87,38 +94,46 @@ class AdminViewModel: ObservableObject {
             return
         }
 
-        let question = TriviaQuestion(
-            questionText: questionText,
-            options: filledOptions,
-            correctAnswerIndex: correctAnswerIndex,
-            pointValue: pointValue,
-            timeLimitSeconds: timeLimitSeconds
-        )
-
         let video = TriviaVideo(
             title: videoTitle,
             description: videoDescription,
             videoURL: videoURL,
             scheduledTime: scheduledDate,
             isActive: false,
-            question: question,
+            questionText: questionText,
+            options: filledOptions,
+            correctAnswerIndex: correctAnswerIndex,
+            pointValue: pointValue,
+            timeLimitSeconds: timeLimitSeconds,
             uploadedBy: AuthService.shared.currentUser?.id ?? "admin"
         )
 
-        triviaService.uploadVideo(video)
-        message = "Video uploaded successfully!"
-        showMessage = true
+        Task {
+            do {
+                try await triviaService.uploadVideo(video)
+                message = "Video uploaded successfully!"
+            } catch {
+                message = "Upload failed: \(error.localizedDescription)"
+            }
+            showMessage = true
+        }
         clearVideoForm()
     }
 
     func activateVideo(_ videoId: String) {
-        triviaService.activateVideo(videoId)
-        message = "Video is now live!"
-        showMessage = true
+        Task {
+            do {
+                try await triviaService.activateVideo(videoId)
+                message = "Video is now live!"
+            } catch {
+                message = "Activation failed: \(error.localizedDescription)"
+            }
+            showMessage = true
+        }
     }
 
     func deleteVideo(_ videoId: String) {
-        triviaService.deleteVideo(videoId)
+        Task { try? await triviaService.deleteVideo(videoId) }
     }
 
     // MARK: - Add Reward
@@ -134,17 +149,23 @@ class AdminViewModel: ObservableObject {
             description: rewardDescription,
             pointCost: rewardPointCost,
             quantityAvailable: rewardQuantity,
-            category: rewardCategory
+            category: rewardCategory.rawValue
         )
 
-        rewardsService.addReward(reward)
-        message = "Reward added successfully!"
-        showMessage = true
+        Task {
+            do {
+                try await rewardsService.addReward(reward)
+                message = "Reward added successfully!"
+            } catch {
+                message = "Failed: \(error.localizedDescription)"
+            }
+            showMessage = true
+        }
         clearRewardForm()
     }
 
     func deleteReward(_ rewardId: String) {
-        rewardsService.deleteReward(rewardId)
+        Task { try? await rewardsService.deleteReward(rewardId) }
     }
 
     // MARK: - Helpers
