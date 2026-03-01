@@ -25,6 +25,7 @@ struct HomeView: View {
             }
         }
         .onAppear {
+            Task { try? await authService.loadProfile() }
             triviaVM.loadActiveVideo()
             triviaVM.startPolling()
         }

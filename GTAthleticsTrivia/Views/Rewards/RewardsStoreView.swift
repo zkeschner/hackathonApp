@@ -42,6 +42,10 @@ struct RewardsStoreView: View {
         } message: {
             Text(viewModel.redemptionMessage)
         }
+        .onAppear {
+            Task { try? await authService.loadProfile() }
+            viewModel.loadRedemptions()
+        }
     }
 
     // MARK: - Points Balance Card

@@ -191,6 +191,9 @@ struct MainTabView: View {
                         .foregroundColor(GTTheme.techGold)
                 }
             }
+            .onAppear {
+                Task { try? await authService.loadProfile() }
+            }
         }
         
         private func profileStat(value: String, label: String) -> some View {

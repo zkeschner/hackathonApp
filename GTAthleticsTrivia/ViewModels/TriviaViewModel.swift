@@ -108,9 +108,8 @@ class TriviaViewModel: ObservableObject {
                 showResult = true
 
                 if result.points > 0 {
-                    var updatedUser = user
-                    updatedUser.points += result.points
-                    authService.currentUser = updatedUser
+                    // Reload profile from DB to get accurate points everywhere
+                    try? await authService.loadProfile()
                 }
             } catch {
                 print("Error submitting answer: \(error)")

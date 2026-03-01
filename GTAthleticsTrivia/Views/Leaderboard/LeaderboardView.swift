@@ -61,7 +61,14 @@ struct LeaderboardView: View {
             }
         }
         .task {
+            try? await authService.loadProfile()
             users = (try? await authService.getAllUsers()) ?? []
+        }
+        .onAppear {
+            Task {
+                try? await authService.loadProfile()
+                users = (try? await authService.getAllUsers()) ?? []
+            }
         }
     }
 
