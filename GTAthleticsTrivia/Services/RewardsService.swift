@@ -28,7 +28,6 @@ class RewardsService: ObservableObject {
         do {
             let fetched: [Reward] = try await supabase.from("rewards")
                 .select()
-                .eq("is_active", value: true)
                 .order("point_cost", ascending: true)
                 .execute()
                 .value
@@ -117,7 +116,7 @@ class RewardsService: ObservableObject {
 
     // MARK: - Convenience
     func getAvailableRewards() -> [Reward] {
-        return rewards.filter { $0.isActive && $0.quantityAvailable != 0 }
+        return rewards.filter { $0.quantityAvailable != 0 }
     }
 
     func getRewardsByCategory(_ category: RewardCategory) -> [Reward] {

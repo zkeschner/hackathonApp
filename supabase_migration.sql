@@ -8,23 +8,12 @@ CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
     display_name TEXT NOT NULL DEFAULT 'Yellow Jacket',
-    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     points INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Profiles policies
-CREATE POLICY "Users can read all profiles" ON profiles
-    FOR SELECT USING (true);
-
-CREATE POLICY "Users can update own profile" ON profiles
-    FOR UPDATE USING (auth.uid() = id);
-
-CREATE POLICY "Users can insert own profile" ON profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Allow all" ON profiles FOR ALL USING (true) WITH CHECK (true);
 
 -- 2. Trivia Videos table
 CREATE TABLE IF NOT EXISTS trivia_videos (
@@ -34,36 +23,16 @@ CREATE TABLE IF NOT EXISTS trivia_videos (
     video_url TEXT NOT NULL,
     scheduled_time TIMESTAMPTZ NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    activated_at TIMESTAMPTZ,
     question_text TEXT NOT NULL,
-    options JSONB NOT NULL DEFAULT '[]',
     correct_answer_index INTEGER NOT NULL DEFAULT 0,
     point_value INTEGER NOT NULL DEFAULT 10,
     time_limit_seconds INTEGER NOT NULL DEFAULT 30,
     uploaded_by TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 ALTER TABLE trivia_videos ENABLE ROW LEVEL SECURITY;
-
--- Everyone can read videos
-CREATE POLICY "Anyone can read videos" ON trivia_videos
-    FOR SELECT USING (true);
-
--- Only admins can insert/update/delete
-CREATE POLICY "Admins can insert videos" ON trivia_videos
-    FOR INSERT WITH CHECK (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
-
-CREATE POLICY "Admins can update videos" ON trivia_videos
-    FOR UPDATE USING (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
-
-CREATE POLICY "Admins can delete videos" ON trivia_videos
-    FOR DELETE USING (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
+CREATE POLICY "Allow all" ON trivia_videos FOR ALL USING (true) WITH CHECK (true);
 
 -- 3. Answers table
 CREATE TABLE IF NOT EXISTS answers (
@@ -71,21 +40,12 @@ CREATE TABLE IF NOT EXISTS answers (
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     video_id UUID NOT NULL REFERENCES trivia_videos(id) ON DELETE CASCADE,
     selected_index INTEGER NOT NULL,
-    is_correct BOOLEAN NOT NULL DEFAULT FALSE,
     points_earned INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, video_id)
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 ALTER TABLE answers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON answers FOR ALL USING (true) WITH CHECK (true);
 
-CREATE POLICY "Users can read own answers" ON answers
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own answers" ON answers
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- 4. Rewards table
 CREATE TABLE IF NOT EXISTS rewards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -96,28 +56,9 @@ CREATE TABLE IF NOT EXISTS rewards (
     image_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 ALTER TABLE rewards ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON rewards FOR ALL USING (true) WITH CHECK (true);
 
-CREATE POLICY "Anyone can read rewards" ON rewards
-    FOR SELECT USING (true);
-
-CREATE POLICY "Admins can insert rewards" ON rewards
-    FOR INSERT WITH CHECK (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
-
-CREATE POLICY "Admins can update rewards" ON rewards
-    FOR UPDATE USING (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
-
-CREATE POLICY "Admins can delete rewards" ON rewards
-    FOR DELETE USING (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
-
--- 5. Redemptions table
 CREATE TABLE IF NOT EXISTS redemptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -127,19 +68,8 @@ CREATE TABLE IF NOT EXISTS redemptions (
     status TEXT NOT NULL DEFAULT 'pending',
     redeemed_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 ALTER TABLE redemptions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can read own redemptions" ON redemptions
-    FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own redemptions" ON redemptions
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Admins can read all redemptions" ON redemptions
-    FOR SELECT USING (
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
-    );
+CREATE POLICY "Allow all" ON redemptions FOR ALL USING (true) WITH CHECK (true);
 
 -- 6. Atomic point increment function (used by app)
 CREATE OR REPLACE FUNCTION increment_points(user_id_input UUID, points_input INTEGER)
@@ -155,7 +85,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO profiles (id, email, display_name)
+    INSERT INTO public.profiles (id, email, display_name)
     VALUES (
         NEW.id,
         NEW.email,

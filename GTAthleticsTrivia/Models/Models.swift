@@ -47,6 +47,7 @@ struct TriviaVideo: Identifiable, Codable, Equatable {
     var timeLimitSeconds: Int
     var uploadedBy: String
     var createdAt: Date?
+    var activatedAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -63,9 +64,10 @@ struct TriviaVideo: Identifiable, Codable, Equatable {
         case timeLimitSeconds = "time_limit_seconds"
         case uploadedBy = "uploaded_by"
         case createdAt = "created_at"
+        case activatedAt = "activated_at"
     }
 
-    init(id: String = UUID().uuidString, title: String, description: String = "", videoURL: String, thumbnailURL: String? = nil, scheduledTime: Date, isActive: Bool = false, questionText: String, options: [String], correctAnswerIndex: Int, pointValue: Int = 10, timeLimitSeconds: Int = 30, uploadedBy: String, createdAt: Date? = nil) {
+    init(id: String = UUID().uuidString, title: String, description: String = "", videoURL: String, thumbnailURL: String? = nil, scheduledTime: Date, isActive: Bool = false, questionText: String, options: [String], correctAnswerIndex: Int, pointValue: Int = 10, timeLimitSeconds: Int = 30, uploadedBy: String, createdAt: Date? = nil, activatedAt: Date? = nil) {
         self.id = id
         self.title = title
         self.description = description
@@ -80,6 +82,7 @@ struct TriviaVideo: Identifiable, Codable, Equatable {
         self.timeLimitSeconds = timeLimitSeconds
         self.uploadedBy = uploadedBy
         self.createdAt = createdAt
+        self.activatedAt = activatedAt
     }
 }
 
@@ -90,7 +93,7 @@ struct AnswerRecord: Identifiable, Codable {
     let videoId: String
     let selectedIndex: Int
     let isCorrect: Bool
-    let pointsAwarded: Int
+    let pointsEarned: Int
     let answeredAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -99,17 +102,17 @@ struct AnswerRecord: Identifiable, Codable {
         case videoId = "video_id"
         case selectedIndex = "selected_index"
         case isCorrect = "is_correct"
-        case pointsAwarded = "points_awarded"
+        case pointsEarned = "points_earned"
         case answeredAt = "answered_at"
     }
 
-    init(id: String = UUID().uuidString, userId: String, videoId: String, selectedIndex: Int, isCorrect: Bool, pointsAwarded: Int, answeredAt: Date? = nil) {
+    init(id: String = UUID().uuidString, userId: String, videoId: String, selectedIndex: Int, isCorrect: Bool, pointsEarned: Int, answeredAt: Date? = nil) {
         self.id = id
         self.userId = userId
         self.videoId = videoId
         self.selectedIndex = selectedIndex
         self.isCorrect = isCorrect
-        self.pointsAwarded = pointsAwarded
+        self.pointsEarned = pointsEarned
         self.answeredAt = answeredAt
     }
 }
@@ -123,7 +126,6 @@ struct Reward: Identifiable, Codable, Equatable {
     var pointCost: Int
     var quantityAvailable: Int
     var category: String
-    var isActive: Bool
     var createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
@@ -134,7 +136,6 @@ struct Reward: Identifiable, Codable, Equatable {
         case pointCost = "point_cost"
         case quantityAvailable = "quantity_available"
         case category
-        case isActive = "is_active"
         case createdAt = "created_at"
     }
 
@@ -146,7 +147,6 @@ struct Reward: Identifiable, Codable, Equatable {
         self.pointCost = pointCost
         self.quantityAvailable = quantityAvailable
         self.category = category
-        self.isActive = isActive
         self.createdAt = createdAt
     }
 }

@@ -6,9 +6,6 @@ struct TriviaView: View {
     @ObservedObject var triviaVM: TriviaViewModel
     @Environment(\.dismiss) private var dismiss
 
-    @State private var showQuestion = false
-    @State private var animateOptions = false
-
     var body: some View {
         ZStack {
             GTTheme.background.ignoresSafeArea()
@@ -20,10 +17,23 @@ struct TriviaView: View {
 
                     if triviaVM.hasAnswered {
                         resultSection
-                    } else if showQuestion {
+                    } else if triviaVM.timeRemaining > 0 {
                         questionSection
                     } else {
-                        readySection
+                        // Time expired
+                        VStack(spacing: 16) {
+                            Image(systemName: "clock.badge.xmark")
+                                .font(.system(size: 60))
+                                .foregroundColor(GTTheme.error)
+                            Text("Time's Up!")
+                                .font(.title2.bold())
+                                .foregroundColor(.white)
+                            Button(action: { dismiss() }) {
+                                Text("Back to Home")
+                            }
+                            .buttonStyle(GTButtonStyle(isSecondary: true))
+                        }
+                        .gtCard()
                     }
 
                     Spacer().frame(height: 20)
@@ -39,11 +49,6 @@ struct TriviaView: View {
                     .foregroundColor(.white)
             }
         }
-        .onAppear {
-            if triviaVM.hasAnswered {
-                showQuestion = true
-            }
-        }
     }
 
     // MARK: - Video Player
@@ -53,57 +58,24 @@ struct TriviaView: View {
                 .fill(GTTheme.navyBlue)
                 .frame(height: 220)
 
-            VStack(spacing: 12) {
-                Image(systemName: "film")
-                    .font(.system(size: 48))
-                    .foregroundColor(GTTheme.techGold)
-
-                Text(video.title)
-                    .font(.headline)
-                    .foregroundColor(.white)
-
-                Text("Video plays here")
-                    .font(.caption)
-                    .foregroundColor(GTTheme.textSecondary)
-
-                // In production, replace with:
-                // VideoPlayer(player: AVPlayer(url: URL(string: video.videoURL)!))
+            if let url = URL(string: video.videoURL) {
+                VideoPlayer(player: AVPlayer(url: url))
+                    .frame(height: 200)
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "film")
+                        .font(.system(size: 48))
+                        .foregroundColor(GTTheme.techGold)
+                    Text(video.title)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    Text("Video unavailable")
+                        .font(.caption)
+                        .foregroundColor(GTTheme.textSecondary)
+                }
             }
         }
         .padding(.top, 8)
-    }
-
-    // MARK: - Ready Button
-    private var readySection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "questionmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(GTTheme.techGold)
-
-            Text("Ready for the question?")
-                .font(.title2.bold())
-                .foregroundColor(.white)
-
-            Text("Watch the video above, then tap below to see the trivia question. You'll have \(video.timeLimitSeconds) seconds to answer!")
-                .font(.subheadline)
-                .foregroundColor(GTTheme.textSecondary)
-                .multilineTextAlignment(.center)
-
-            Text("\(video.pointValue) points available")
-                .font(.caption.bold())
-                .foregroundColor(GTTheme.techGold)
-
-            Button(action: {
-                withAnimation(.spring()) {
-                    showQuestion = true
-                }
-                triviaVM.startTimer()
-            }) {
-                Text("Show Question")
-            }
-            .buttonStyle(GTButtonStyle())
-        }
-        .gtCard()
     }
 
     // MARK: - Question Section
@@ -261,12 +233,19 @@ extension Array {
         TriviaView(
             video: TriviaVideo(
                 title: "Sample Trivia",
+                description: "",
                 videoURL: "",
+                thumbnailURL: nil,
                 scheduledTime: Date(),
+                isActive: false,
                 questionText: "What color is Tech Gold?",
                 options: ["Blue", "Gold", "Red", "Green"],
                 correctAnswerIndex: 1,
-                uploadedBy: "admin"
+                pointValue: 10,
+                timeLimitSeconds: 30,
+                uploadedBy: "admin",
+                createdAt: nil,
+                activatedAt: nil
             ),
             triviaVM: TriviaViewModel()
         )

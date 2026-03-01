@@ -49,48 +49,61 @@ struct AdminDashboardView: View {
 struct AdminVideosView: View {
     @ObservedObject var adminVM: AdminViewModel
     @State private var showUploadForm = false
+    @State private var refreshTimer: Timer?
 
     var body: some View {
-        VStack(spacing: 20) {
-            // Upload Button
-            Button(action: { showUploadForm.toggle() }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Upload New Video + Question")
-                }
-            }
-            .buttonStyle(GTButtonStyle())
-            .padding(.top, 16)
-
-            // Upload Form
-            if showUploadForm {
-                uploadForm
-            }
-
-            // Existing Videos
-            VStack(alignment: .leading, spacing: 12) {
-                Text("ALL VIDEOS")
-                    .font(.caption)
-                    .fontWeight(.heavy)
-                    .tracking(2)
-                    .foregroundColor(GTTheme.textSecondary)
-
-                if adminVM.allVideos.isEmpty {
-                    Text("No videos uploaded yet.")
-                        .font(.subheadline)
-                        .foregroundColor(GTTheme.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, 20)
-                } else {
-                    ForEach(adminVM.allVideos) { video in
-                        videoRow(video)
+        ScrollView {
+            VStack(spacing: 20) {
+                // Upload Button
+                Button(action: { showUploadForm.toggle() }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Upload New Video + Question")
                     }
                 }
-            }
+                .buttonStyle(GTButtonStyle())
+                .padding(.top, 16)
 
-            Spacer().frame(height: 20)
+                // Upload Form
+                if showUploadForm {
+                    uploadForm
+                }
+
+                // Existing Videos
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("ALL VIDEOS")
+                        .font(.caption)
+                        .fontWeight(.heavy)
+                        .tracking(2)
+                        .foregroundColor(GTTheme.textSecondary)
+
+                    if adminVM.allVideos.isEmpty {
+                        Text("No videos uploaded yet.")
+                            .font(.subheadline)
+                            .foregroundColor(GTTheme.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 20)
+                    } else {
+                        ForEach(adminVM.allVideos) { video in
+                            videoRow(video)
+                        }
+                    }
+                }
+
+                Spacer().frame(height: 20)
+            }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
+        .onAppear {
+            adminVM.refreshVideos()
+            refreshTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+                Task { @MainActor in adminVM.refreshVideos() }
+            }
+        }
+        .onDisappear {
+            refreshTimer?.invalidate()
+            refreshTimer = nil
+        }
     }
 
     // MARK: - Upload Form
@@ -103,17 +116,6 @@ struct AdminVideosView: View {
             GTTextField(label: "Video Title", text: $adminVM.videoTitle, icon: "film")
             GTTextField(label: "Description", text: $adminVM.videoDescription, icon: "text.alignleft")
             GTTextField(label: "Video URL", text: $adminVM.videoURL, icon: "link")
-
-            // Scheduled Date
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Scheduled Time")
-                    .font(.caption)
-                    .foregroundColor(GTTheme.textSecondary)
-                DatePicker("", selection: $adminVM.scheduledDate)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    .tint(GTTheme.techGold)
-            }
 
             Divider().background(GTTheme.techGold.opacity(0.3))
 
@@ -172,7 +174,10 @@ struct AdminVideosView: View {
 
     // MARK: - Video Row
     private func videoRow(_ video: TriviaVideo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let isLive = video.isActive && video.activatedAt != nil && Date().timeIntervalSince(video.activatedAt!) < Double(video.timeLimitSeconds)
+        let remaining = isLive ? max(0, Int(Double(video.timeLimitSeconds) - Date().timeIntervalSince(video.activatedAt!))) : 0
+
+        return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
@@ -180,8 +185,8 @@ struct AdminVideosView: View {
                             .font(.subheadline.bold())
                             .foregroundColor(.white)
 
-                        if video.isActive {
-                            Text("LIVE")
+                        if isLive {
+                            Text("LIVE \(remaining)s")
                                 .font(.caption2.bold())
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
@@ -190,15 +195,17 @@ struct AdminVideosView: View {
                         }
                     }
 
-                    Text(video.scheduledTime, style: .date)
-                        .font(.caption)
-                        .foregroundColor(GTTheme.textSecondary)
+                    if let created = video.createdAt {
+                        Text(created, style: .date)
+                            .font(.caption)
+                            .foregroundColor(GTTheme.textSecondary)
+                    }
                 }
 
                 Spacer()
 
                 HStack(spacing: 12) {
-                    if !video.isActive {
+                    if !isLive {
                         Button(action: { adminVM.activateVideo(video.id) }) {
                             Image(systemName: "play.circle.fill")
                                 .foregroundColor(GTTheme.success)

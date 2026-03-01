@@ -15,21 +15,34 @@ class AuthService: ObservableObject {
 
     // MARK: - Sign Up
     func signUp(email: String, password: String, displayName: String, isAdmin: Bool = false) async throws {
-        let authResponse = try await supabase.auth.signUp(email: email, password: password)
+        // Pass display_name in metadata so the DB trigger can use it
+        let authResponse = try await supabase.auth.signUp(
+            email: email,
+            password: password,
+            data: ["display_name": .string(displayName)]
+        )
         let userId = authResponse.user.id.uuidString
 
-        let profile = AppUser(
-            id: userId,
-            email: email,
-            displayName: displayName,
-            points: 0,
-            isAdmin: isAdmin
-        )
+        // The DB trigger auto-creates a profile row.
+        // Give it a moment, then load the profile.
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5s
 
-        try await supabase.from("profiles").insert(profile).execute()
-
-        currentUser = profile
-        isAuthenticated = true
+        // Try to load the trigger-created profile
+        do {
+            try await loadProfile()
+        } catch {
+            // Trigger may not have fired yet or user confirmed email required—
+            // create a local user object so the UI works
+            print("[AuthService] loadProfile after signup failed: \(error)")
+            currentUser = AppUser(
+                id: userId,
+                email: email,
+                displayName: displayName,
+                points: 0,
+                isAdmin: isAdmin
+            )
+            isAuthenticated = true
+        }
     }
 
     // MARK: - Sign In
@@ -81,7 +94,7 @@ class AuthService: ObservableObject {
     }
 
     // MARK: - Load Profile
-    private func loadProfile() async throws {
+    func loadProfile() async throws {
         guard let userId = try? await supabase.auth.session.user.id else { return }
 
         let profile: AppUser = try await supabase.from("profiles")

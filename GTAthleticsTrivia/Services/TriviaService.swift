@@ -28,7 +28,7 @@ class TriviaService: ObservableObject {
         do {
             let fetched: [TriviaVideo] = try await supabase.from("trivia_videos")
                 .select()
-                .order("scheduled_time", ascending: false)
+                .order("created_at", ascending: false)
                 .execute()
                 .value
             videos = fetched
@@ -52,20 +52,38 @@ class TriviaService: ObservableObject {
         await fetchVideos()
     }
 
+    private struct DeactivatePayload: Encodable {
+        let is_active: Bool
+        let activated_at: String?
+    }
+
+    private struct ActivatePayload: Encodable {
+        let is_active: Bool
+        let activated_at: String
+    }
+
     func activateVideo(_ videoId: String) async throws {
         // Deactivate all
         try await supabase.from("trivia_videos")
-            .update(["is_active": false])
+            .update(DeactivatePayload(is_active: false, activated_at: nil))
             .eq("is_active", value: true)
             .execute()
 
-        // Activate selected
+        // Activate selected and set activated_at
+        let isoDate = ISO8601DateFormatter().string(from: Date())
         try await supabase.from("trivia_videos")
-            .update(["is_active": true])
+            .update(ActivatePayload(is_active: true, activated_at: isoDate))
             .eq("id", value: videoId)
             .execute()
 
         await fetchVideos()
+
+        // Schedule auto-deactivation via Edge Function after 30 seconds
+        Task {
+            try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds
+            try? await supabase.functions.invoke("deactivation")
+            await fetchVideos()
+        }
     }
 
     // MARK: - Answer Submission
@@ -89,7 +107,7 @@ class TriviaService: ObservableObject {
             videoId: videoId,
             selectedIndex: selectedIndex,
             isCorrect: isCorrect,
-            pointsAwarded: points
+            pointsEarned: points
         )
         try await supabase.from("answers").insert(answer).execute()
 
@@ -120,15 +138,7 @@ class TriviaService: ObservableObject {
         return videos.first(where: { $0.isActive })
     }
 
-    func getUpcomingVideos() -> [TriviaVideo] {
-        return videos
-            .filter { $0.scheduledTime > Date() && !$0.isActive }
-            .sorted { $0.scheduledTime < $1.scheduledTime }
-    }
-
     func getPastVideos() -> [TriviaVideo] {
-        return videos
-            .filter { $0.scheduledTime <= Date() && !$0.isActive }
-            .sorted { $0.scheduledTime > $1.scheduledTime }
+        return videos.filter { !$0.isActive }
     }
 }

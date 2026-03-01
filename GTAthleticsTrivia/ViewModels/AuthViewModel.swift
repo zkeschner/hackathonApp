@@ -67,6 +67,7 @@ class AuthViewModel: ObservableObject {
                 try await authService.signUp(email: email, password: password, displayName: displayName, isAdmin: isAdmin)
                 clearFields()
             } catch {
+                print("[SignUp Error] \(error)")
                 errorMessage = error.localizedDescription
             }
             isLoading = false

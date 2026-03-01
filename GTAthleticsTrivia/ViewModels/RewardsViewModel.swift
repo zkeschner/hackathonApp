@@ -52,7 +52,6 @@ class AdminViewModel: ObservableObject {
     @Published var videoTitle = ""
     @Published var videoDescription = ""
     @Published var videoURL = ""
-    @Published var scheduledDate = Date()
     @Published var questionText = ""
     @Published var options = ["", "", "", ""]
     @Published var correctAnswerIndex = 0
@@ -79,6 +78,11 @@ class AdminViewModel: ObservableObject {
         rewardsService.rewards
     }
 
+    // MARK: - Refresh Videos
+    func refreshVideos() {
+        Task { await triviaService.fetchVideos() }
+    }
+
     // MARK: - Upload Video + Question
     func uploadVideo() {
         guard !videoTitle.isEmpty, !videoURL.isEmpty, !questionText.isEmpty else {
@@ -98,14 +102,17 @@ class AdminViewModel: ObservableObject {
             title: videoTitle,
             description: videoDescription,
             videoURL: videoURL,
-            scheduledTime: scheduledDate,
+            thumbnailURL: nil,
+            scheduledTime: Date(),
             isActive: false,
             questionText: questionText,
             options: filledOptions,
             correctAnswerIndex: correctAnswerIndex,
             pointValue: pointValue,
             timeLimitSeconds: timeLimitSeconds,
-            uploadedBy: AuthService.shared.currentUser?.id ?? "admin"
+            uploadedBy: AuthService.shared.currentUser?.id ?? "admin",
+            createdAt: nil,
+            activatedAt: nil
         )
 
         Task {
