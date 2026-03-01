@@ -99,7 +99,8 @@ class TriviaService: ObservableObject {
         }
 
         let isCorrect = video.correctAnswerIndex == selectedIndex
-        let points = isCorrect ? video.pointValue : 0
+        let basePoints = isCorrect ? video.pointValue : 0
+        let points = Int(Double(basePoints) * PointsMultiplier.current)
 
         // Save answer record
         let answer = AnswerRecord(

@@ -198,3 +198,76 @@ struct LeaderboardEntry: Identifiable {
     let rank: Int
     let avatarURL: String?
 }
+
+// MARK: - Points Multiplier
+struct PointsMultiplier {
+    /// Hardcoded for now — will eventually be based on consecutive games attended
+    static let current: Double = 1.5
+    static var display: String { "\(current)x" }
+}
+
+// MARK: - Prediction (maps to "predictions" table)
+struct Prediction: Identifiable, Codable, Equatable {
+    let id: String
+    var title: String
+    var description: String
+    var pointValue: Int
+    var isActive: Bool
+    var isClosed: Bool
+    var correctAnswer: Bool?  // nil while open; true = Yes, false = No
+    var createdBy: String
+    var createdAt: Date?
+    var closedAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, description
+        case pointValue = "point_value"
+        case isActive = "is_active"
+        case isClosed = "is_closed"
+        case correctAnswer = "correct_answer"
+        case createdBy = "created_by"
+        case createdAt = "created_at"
+        case closedAt = "closed_at"
+    }
+
+    init(id: String = UUID().uuidString, title: String, description: String = "", pointValue: Int = 10, isActive: Bool = true, isClosed: Bool = false, correctAnswer: Bool? = nil, createdBy: String, createdAt: Date? = nil, closedAt: Date? = nil) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.pointValue = pointValue
+        self.isActive = isActive
+        self.isClosed = isClosed
+        self.correctAnswer = correctAnswer
+        self.createdBy = createdBy
+        self.createdAt = createdAt
+        self.closedAt = closedAt
+    }
+}
+
+// MARK: - Prediction Vote (maps to "prediction_votes" table)
+struct PredictionVote: Identifiable, Codable, Equatable {
+    let id: String
+    let userId: String
+    let predictionId: String
+    var vote: Bool  // true = Yes, false = No
+    var pointsEarned: Int
+    var createdAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case predictionId = "prediction_id"
+        case vote
+        case pointsEarned = "points_earned"
+        case createdAt = "created_at"
+    }
+
+    init(id: String = UUID().uuidString, userId: String, predictionId: String, vote: Bool, pointsEarned: Int = 0, createdAt: Date? = nil) {
+        self.id = id
+        self.userId = userId
+        self.predictionId = predictionId
+        self.vote = vote
+        self.pointsEarned = pointsEarned
+        self.createdAt = createdAt
+    }
+}

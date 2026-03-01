@@ -1,5 +1,4 @@
 import SwiftUI
-import AVKit
 
 struct TriviaView: View {
     let video: TriviaVideo
@@ -12,9 +11,6 @@ struct TriviaView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    // Video Player Area
-                    videoPlayerSection
-
                     if triviaVM.hasAnswered {
                         resultSection
                     } else if triviaVM.timeRemaining > 0 {
@@ -49,33 +45,6 @@ struct TriviaView: View {
                     .foregroundColor(.white)
             }
         }
-    }
-
-    // MARK: - Video Player
-    private var videoPlayerSection: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(GTTheme.navyBlue)
-                .frame(height: 220)
-
-            if let url = URL(string: video.videoURL) {
-                VideoPlayer(player: AVPlayer(url: url))
-                    .frame(height: 200)
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "film")
-                        .font(.system(size: 48))
-                        .foregroundColor(GTTheme.techGold)
-                    Text(video.title)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    Text("Video unavailable")
-                        .font(.caption)
-                        .foregroundColor(GTTheme.textSecondary)
-                }
-            }
-        }
-        .padding(.top, 8)
     }
 
     // MARK: - Question Section

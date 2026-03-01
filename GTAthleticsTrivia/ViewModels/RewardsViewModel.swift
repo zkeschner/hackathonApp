@@ -64,11 +64,18 @@ class AdminViewModel: ObservableObject {
     @Published var rewardQuantity = -1
     @Published var rewardCategory: RewardCategory = .merchandise
 
+    // Prediction fields
+    @Published var predictionTitle = ""
+    @Published var predictionDescription = ""
+    @Published var predictionPointValue = 10
+    @Published var allPredictions: [Prediction] = []
+
     @Published var message = ""
     @Published var showMessage = false
 
     private let triviaService = TriviaService.shared
     private let rewardsService = RewardsService.shared
+    private let predictionService = PredictionService.shared
 
     var allVideos: [TriviaVideo] {
         triviaService.videos
@@ -76,6 +83,14 @@ class AdminViewModel: ObservableObject {
 
     var allRewards: [Reward] {
         rewardsService.rewards
+    }
+
+    var activePredictions: [Prediction] {
+        allPredictions.filter { $0.isActive && !$0.isClosed }
+    }
+
+    var closedPredictions: [Prediction] {
+        allPredictions.filter { $0.isClosed }
     }
 
     // MARK: - Refresh Videos
@@ -175,6 +190,64 @@ class AdminViewModel: ObservableObject {
         Task { try? await rewardsService.deleteReward(rewardId) }
     }
 
+    // MARK: - Predictions
+    func refreshPredictions() {
+        Task { await predictionService.fetchPredictions(); allPredictions = predictionService.predictions }
+    }
+
+    func createPrediction() {
+        guard !predictionTitle.isEmpty else {
+            message = "Please enter a prediction title."
+            showMessage = true
+            return
+        }
+
+        let prediction = Prediction(
+            title: predictionTitle,
+            description: predictionDescription,
+            pointValue: predictionPointValue,
+            isActive: true,
+            isClosed: false,
+            createdBy: AuthService.shared.currentUser?.id ?? "admin"
+        )
+
+        Task {
+            do {
+                try await predictionService.createPrediction(prediction)
+                allPredictions = predictionService.predictions
+                message = "Prediction created successfully!"
+            } catch {
+                message = "Failed: \(error.localizedDescription)"
+            }
+            showMessage = true
+        }
+        clearPredictionForm()
+    }
+
+    func closePrediction(_ predictionId: String, correctAnswer: Bool) {
+        Task {
+            do {
+                try await predictionService.closePrediction(predictionId, correctAnswer: correctAnswer)
+                allPredictions = predictionService.predictions
+                message = "Prediction closed & points paid out!"
+            } catch {
+                message = "Failed: \(error.localizedDescription)"
+            }
+            showMessage = true
+        }
+    }
+
+    func deletePrediction(_ predictionId: String) {
+        Task {
+            do {
+                try await predictionService.deletePrediction(predictionId)
+                allPredictions = predictionService.predictions
+            } catch {
+                print("Error deleting prediction: \(error)")
+            }
+        }
+    }
+
     // MARK: - Helpers
     private func clearVideoForm() {
         videoTitle = ""
@@ -193,5 +266,11 @@ class AdminViewModel: ObservableObject {
         rewardPointCost = 50
         rewardQuantity = -1
         rewardCategory = .merchandise
+    }
+
+    private func clearPredictionForm() {
+        predictionTitle = ""
+        predictionDescription = ""
+        predictionPointValue = 10
     }
 }

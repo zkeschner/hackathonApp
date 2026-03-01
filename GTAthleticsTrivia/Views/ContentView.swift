@@ -58,6 +58,16 @@ struct MainTabView: View {
                 Text("Rankings")
             }
             .tag(1)
+
+            // Predictions
+            NavigationStack {
+                PredictionsView()
+            }
+            .tabItem {
+                Image(systemName: "chart.bar.fill")
+                Text("Predict")
+            }
+            .tag(2)
             
             // Rewards
             NavigationStack {
@@ -67,7 +77,7 @@ struct MainTabView: View {
                 Image(systemName: "gift.fill")
                 Text("Rewards")
             }
-            .tag(2)
+            .tag(3)
             
             // Admin (if admin)
             if isAdmin {
@@ -90,7 +100,7 @@ struct MainTabView: View {
                     Image(systemName: "gearshape.fill")
                     Text("Admin")
                 }
-                .tag(3)
+                .tag(4)
             }
             
             // Profile
@@ -101,7 +111,7 @@ struct MainTabView: View {
                 Image(systemName: "person.fill")
                 Text("Profile")
             }
-            .tag(4)
+            .tag(5)
         }
         .tint(GTTheme.techGold)
         .onAppear {

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1DA65A872F53E10200607352 /* PredictionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA65A852F53E10200607352 /* PredictionsView.swift */; };
+		1DA65A892F53E1B000607352 /* PredictionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA65A882F53E1B000607352 /* PredictionViewModel.swift */; };
+		1DA65A8B2F53E1FF00607352 /* PredictionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA65A8A2F53E1FF00607352 /* PredictionService.swift */; };
 		A1000001 /* GTAthletesTriviaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000001 /* GTAthletesTriviaApp.swift */; };
 		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000002 /* ContentView.swift */; };
 		A1000003 /* GTTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000003 /* GTTheme.swift */; };
@@ -30,6 +33,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1DA65A852F53E10200607352 /* PredictionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictionsView.swift; sourceTree = "<group>"; };
+		1DA65A882F53E1B000607352 /* PredictionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictionViewModel.swift; sourceTree = "<group>"; };
+		1DA65A8A2F53E1FF00607352 /* PredictionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PredictionService.swift; sourceTree = "<group>"; };
 		B1000001 /* GTAthletesTriviaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GTAthletesTriviaApp.swift; sourceTree = "<group>"; };
 		B1000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		B1000003 /* GTTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GTTheme.swift; sourceTree = "<group>"; };
@@ -64,6 +70,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1DA65A862F53E10200607352 /* Predictions */ = {
+			isa = PBXGroup;
+			children = (
+				1DA65A852F53E10200607352 /* PredictionsView.swift */,
+			);
+			path = Predictions;
+			sourceTree = "<group>";
+		};
 		E1000001 = {
 			isa = PBXGroup;
 			children = (
@@ -105,6 +119,7 @@
 		E1000005 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				1DA65A8A2F53E1FF00607352 /* PredictionService.swift */,
 				B1000013 /* SupabaseConfig.swift */,
 				B1000005 /* AuthService.swift */,
 				B1000006 /* TriviaService.swift */,
@@ -116,6 +131,7 @@
 		E1000006 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				1DA65A882F53E1B000607352 /* PredictionViewModel.swift */,
 				B1000008 /* AuthViewModel.swift */,
 				B1000009 /* TriviaViewModel.swift */,
 				B100000A /* RewardsViewModel.swift */,
@@ -126,6 +142,7 @@
 		E1000007 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				1DA65A862F53E10200607352 /* Predictions */,
 				B1000002 /* ContentView.swift */,
 				E1000008 /* Auth */,
 				E1000009 /* Home */,
@@ -271,6 +288,7 @@
 			files = (
 				A1000001 /* GTAthletesTriviaApp.swift in Sources */,
 				A1000002 /* ContentView.swift in Sources */,
+				1DA65A8B2F53E1FF00607352 /* PredictionService.swift in Sources */,
 				A1000003 /* GTTheme.swift in Sources */,
 				A1000004 /* Models.swift in Sources */,
 				A1000005 /* AuthService.swift in Sources */,
@@ -278,7 +296,9 @@
 				A1000007 /* RewardsService.swift in Sources */,
 				A1000008 /* AuthViewModel.swift in Sources */,
 				A1000009 /* TriviaViewModel.swift in Sources */,
+				1DA65A892F53E1B000607352 /* PredictionViewModel.swift in Sources */,
 				A100000A /* RewardsViewModel.swift in Sources */,
+				1DA65A872F53E10200607352 /* PredictionsView.swift in Sources */,
 				A100000B /* LoginView.swift in Sources */,
 				A100000C /* SignUpView.swift in Sources */,
 				A100000D /* HomeView.swift in Sources */,
