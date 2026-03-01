@@ -230,63 +230,65 @@ struct AdminPredictionsView: View {
     @State private var refreshTimer: Timer?
 
     var body: some View {
-        VStack(spacing: 20) {
-            // Create Button
-            Button(action: { showCreateForm.toggle() }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text("New Prediction")
-                }
-            }
-            .buttonStyle(GTButtonStyle())
-            .padding(.top, 16)
-
-            // Create Form
-            if showCreateForm {
-                createForm
-            }
-
-            // Active Predictions
-            if !adminVM.activePredictions.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("ACTIVE PREDICTIONS")
-                        .font(.caption)
-                        .fontWeight(.heavy)
-                        .tracking(2)
-                        .foregroundColor(GTTheme.textSecondary)
-
-                    ForEach(adminVM.activePredictions) { prediction in
-                        activePredictionRow(prediction)
+        ScrollView {
+            VStack(spacing: 20) {
+                // Create Button
+                Button(action: { showCreateForm.toggle() }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("New Prediction")
                     }
                 }
-            }
+                .buttonStyle(GTButtonStyle())
+                .padding(.top, 16)
 
-            // Closed Predictions
-            if !adminVM.closedPredictions.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("CLOSED PREDICTIONS")
-                        .font(.caption)
-                        .fontWeight(.heavy)
-                        .tracking(2)
-                        .foregroundColor(GTTheme.textSecondary)
+                // Create Form
+                if showCreateForm {
+                    createForm
+                }
 
-                    ForEach(adminVM.closedPredictions) { prediction in
-                        closedPredictionRow(prediction)
+                // Active Predictions
+                if !adminVM.activePredictions.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("ACTIVE PREDICTIONS")
+                            .font(.caption)
+                            .fontWeight(.heavy)
+                            .tracking(2)
+                            .foregroundColor(GTTheme.textSecondary)
+
+                        ForEach(adminVM.activePredictions) { prediction in
+                            activePredictionRow(prediction)
+                        }
                     }
                 }
-            }
 
-            if adminVM.activePredictions.isEmpty && adminVM.closedPredictions.isEmpty {
-                Text("No predictions yet.")
-                    .font(.subheadline)
-                    .foregroundColor(GTTheme.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 20)
-            }
+                // Closed Predictions
+                if !adminVM.closedPredictions.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("CLOSED PREDICTIONS")
+                            .font(.caption)
+                            .fontWeight(.heavy)
+                            .tracking(2)
+                            .foregroundColor(GTTheme.textSecondary)
 
-            Spacer().frame(height: 20)
+                        ForEach(adminVM.closedPredictions) { prediction in
+                            closedPredictionRow(prediction)
+                        }
+                    }
+                }
+
+                if adminVM.activePredictions.isEmpty && adminVM.closedPredictions.isEmpty {
+                    Text("No predictions yet.")
+                        .font(.subheadline)
+                        .foregroundColor(GTTheme.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                }
+
+                Spacer().frame(height: 20)
+            }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .onAppear {
             adminVM.refreshPredictions()
             refreshTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
@@ -438,35 +440,37 @@ struct AdminRewardsView: View {
     @State private var showAddForm = false
 
     var body: some View {
-        VStack(spacing: 20) {
-            Button(action: { showAddForm.toggle() }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Add New Reward")
+        ScrollView {
+            VStack(spacing: 20) {
+                Button(action: { showAddForm.toggle() }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                        Text("Add New Reward")
+                    }
                 }
-            }
-            .buttonStyle(GTButtonStyle())
-            .padding(.top, 16)
+                .buttonStyle(GTButtonStyle())
+                .padding(.top, 16)
 
-            if showAddForm {
-                addRewardForm
-            }
-
-            VStack(alignment: .leading, spacing: 12) {
-                Text("ALL REWARDS")
-                    .font(.caption)
-                    .fontWeight(.heavy)
-                    .tracking(2)
-                    .foregroundColor(GTTheme.textSecondary)
-
-                ForEach(adminVM.allRewards) { reward in
-                    rewardRow(reward)
+                if showAddForm {
+                    addRewardForm
                 }
-            }
 
-            Spacer().frame(height: 20)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("ALL REWARDS")
+                        .font(.caption)
+                        .fontWeight(.heavy)
+                        .tracking(2)
+                        .foregroundColor(GTTheme.textSecondary)
+
+                    ForEach(adminVM.allRewards) { reward in
+                        rewardRow(reward)
+                    }
+                }
+
+                Spacer().frame(height: 20)
+            }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
     }
 
     private var addRewardForm: some View {
@@ -571,64 +575,66 @@ struct AdminStatsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("OVERVIEW")
-                .font(.caption)
-                .fontWeight(.heavy)
-                .tracking(2)
-                .foregroundColor(GTTheme.textSecondary)
-                .padding(.top, 16)
-
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 14) {
-                statCard(title: "Total Users", value: "\(allUsers.count)", icon: "person.3.fill")
-                statCard(title: "Total Points", value: "\(allUsers.reduce(0) { $0 + $1.points })", icon: "star.fill")
-                statCard(title: "Videos", value: "\(TriviaService.shared.videos.count)", icon: "film")
-                statCard(title: "Rewards", value: "\(RewardsService.shared.rewards.count)", icon: "gift.fill")
-            }
-            .task { loadUsers() }
-
-            VStack(alignment: .leading, spacing: 12) {
-                Text("ALL USERS")
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("OVERVIEW")
                     .font(.caption)
                     .fontWeight(.heavy)
                     .tracking(2)
                     .foregroundColor(GTTheme.textSecondary)
+                    .padding(.top, 16)
 
-                ForEach(allUsers) { user in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 6) {
-                                Text(user.displayName)
-                                    .font(.subheadline.bold())
-                                    .foregroundColor(.white)
-                                if user.isAdmin {
-                                    Text("ADMIN")
-                                        .font(.caption2.bold())
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 1)
-                                        .background(Capsule().fill(GTTheme.techGold))
-                                        .foregroundColor(GTTheme.navyBlue)
-                                }
-                            }
-                            Text(user.email)
-                                .font(.caption)
-                                .foregroundColor(GTTheme.textSecondary)
-                        }
-                        Spacer()
-                        Text("\(user.points) pts")
-                            .font(.caption.bold())
-                            .foregroundColor(GTTheme.techGold)
-                    }
-                    .gtCard()
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 14) {
+                    statCard(title: "Total Users", value: "\(allUsers.count)", icon: "person.3.fill")
+                    statCard(title: "Total Points", value: "\(allUsers.reduce(0) { $0 + $1.points })", icon: "star.fill")
+                    statCard(title: "Videos", value: "\(TriviaService.shared.videos.count)", icon: "film")
+                    statCard(title: "Rewards", value: "\(RewardsService.shared.rewards.count)", icon: "gift.fill")
                 }
-            }
+                .task { loadUsers() }
 
-            Spacer().frame(height: 20)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("ALL USERS")
+                        .font(.caption)
+                        .fontWeight(.heavy)
+                        .tracking(2)
+                        .foregroundColor(GTTheme.textSecondary)
+
+                    ForEach(allUsers) { user in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text(user.displayName)
+                                        .font(.subheadline.bold())
+                                        .foregroundColor(.white)
+                                    if user.isAdmin {
+                                        Text("ADMIN")
+                                            .font(.caption2.bold())
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 1)
+                                            .background(Capsule().fill(GTTheme.techGold))
+                                            .foregroundColor(GTTheme.navyBlue)
+                                    }
+                                }
+                                Text(user.email)
+                                    .font(.caption)
+                                    .foregroundColor(GTTheme.textSecondary)
+                            }
+                            Spacer()
+                            Text("\(user.points) pts")
+                                .font(.caption.bold())
+                                .foregroundColor(GTTheme.techGold)
+                        }
+                        .gtCard()
+                    }
+                }
+
+                Spacer().frame(height: 20)
+            }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
     }
 
     private func statCard(title: String, value: String, icon: String) -> some View {

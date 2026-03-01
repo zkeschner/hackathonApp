@@ -14,19 +14,11 @@ struct LeaderboardView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // Title
-                    VStack(spacing: 4) {
-                        Text("LEADERBOARD")
-                            .font(.caption)
-                            .fontWeight(.heavy)
-                            .tracking(4)
-                            .foregroundColor(GTTheme.techGold)
-
-                        Text("Top Yellow Jackets")
-                            .font(.title2.bold())
-                            .foregroundColor(.white)
-                    }
-                    .padding(.top, 16)
+                    // Subtitle
+                    Text("Top Yellow Jackets")
+                        .font(.title2.bold())
+                        .foregroundColor(.white)
+                        .padding(.top, 8)
 
                     // Podium (Top 3)
                     if sortedUsers.count >= 3 {

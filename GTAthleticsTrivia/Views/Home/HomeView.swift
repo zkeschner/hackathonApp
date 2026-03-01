@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var authService = AuthService.shared
     @StateObject var triviaVM = TriviaViewModel()
+    @State private var userRank: Int?
     
     var body: some View {
         ZStack {
@@ -25,7 +26,15 @@ struct HomeView: View {
             }
         }
         .onAppear {
-            Task { try? await authService.loadProfile() }
+            Task {
+                try? await authService.loadProfile()
+                if let userId = authService.currentUser?.id {
+                    let allUsers = (try? await authService.getAllUsers()) ?? []
+                    if let index = allUsers.firstIndex(where: { $0.id == userId }) {
+                        userRank = index + 1
+                    }
+                }
+            }
             triviaVM.loadActiveVideo()
             triviaVM.startPolling()
         }
@@ -57,7 +66,7 @@ struct HomeView: View {
                     .foregroundColor(GTTheme.navyBlue)
             }
         }
-        .padding(.top, 16)
+        .padding(.top, 8)
     }
     
     // MARK: - Points Card
@@ -81,7 +90,7 @@ struct HomeView: View {
                 Image(systemName: "star.circle.fill")
                     .font(.system(size: 44))
                     .foregroundColor(GTTheme.techGold)
-                Text("Rank #—")
+                Text(userRank != nil ? "Rank #\(userRank!)" : "Rank #—")
                     .font(.caption2)
                     .foregroundColor(GTTheme.textSecondary)
             }

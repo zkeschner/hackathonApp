@@ -79,7 +79,7 @@ struct PredictionsView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .principal) {
                 HStack(spacing: 6) {
                     Image(systemName: "chart.bar.fill")
                         .foregroundColor(GTTheme.techGold)

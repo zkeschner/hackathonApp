@@ -32,7 +32,7 @@ struct MainTabView: View {
                 HomeView()
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
-                        ToolbarItem(placement: .topBarLeading) {
+                        ToolbarItem(placement: .principal) {
                             HStack(spacing: 6) {
                                 Image(systemName: "sportscourt.fill")
                                     .foregroundColor(GTTheme.techGold)
@@ -52,6 +52,18 @@ struct MainTabView: View {
             // Leaderboard
             NavigationStack {
                 LeaderboardView()
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .principal) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "trophy.fill")
+                                    .foregroundColor(GTTheme.techGold)
+                                Text("Rankings")
+                                    .font(.headline.bold())
+                                    .foregroundColor(GTTheme.techGold)
+                            }
+                        }
+                    }
             }
             .tabItem {
                 Image(systemName: "trophy.fill")
@@ -85,12 +97,12 @@ struct MainTabView: View {
                     AdminDashboardView()
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
+                            ToolbarItem(placement: .principal) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "shield.checkered")
                                         .foregroundColor(GTTheme.techGold)
                                     Text("Admin")
-                                        .font(.caption)
+                                        .font(.headline.bold())
                                         .foregroundColor(GTTheme.techGold)
                                 }
                             }
@@ -195,7 +207,7 @@ struct MainTabView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .principal) {
                     Text("Profile")
                         .font(.headline.bold())
                         .foregroundColor(GTTheme.techGold)

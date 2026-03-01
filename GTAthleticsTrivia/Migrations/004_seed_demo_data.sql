@@ -26,24 +26,22 @@ VALUES
     ('a0000001-0000-0000-0000-000000000015', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'pat.swilling@gatech.edu', crypt('demodemo', gen_salt('bf')), now(), now() - interval '3 days', now(), '', '{"provider":"email","providers":["email"]}', '{}')
 ON CONFLICT (id) DO NOTHING;
 
--- Now insert profiles (matching auth user IDs)
-INSERT INTO profiles (id, email, display_name, points, is_admin, created_at) VALUES
-    ('a0000001-0000-0000-0000-000000000001', 'buzz.yellowjacket@gatech.edu', 'Buzz Yellowjacket', 1250, false, now() - interval '30 days'),
-    ('a0000001-0000-0000-0000-000000000002', 'george.burdell@gatech.edu', 'George P. Burdell', 1100, false, now() - interval '28 days'),
-    ('a0000001-0000-0000-0000-000000000003', 'ramblin.wreck@gatech.edu', 'Ramblin Wreck', 980, false, now() - interval '25 days'),
-    ('a0000001-0000-0000-0000-000000000004', 'calvin.johnson@gatech.edu', 'Calvin Johnson', 875, false, now() - interval '22 days'),
-    ('a0000001-0000-0000-0000-000000000005', 'demaryius.thomas@gatech.edu', 'Demaryius Thomas', 820, false, now() - interval '20 days'),
-    ('a0000001-0000-0000-0000-000000000006', 'joe.hamilton@gatech.edu', 'Joe Hamilton', 755, false, now() - interval '18 days'),
-    ('a0000001-0000-0000-0000-000000000007', 'chris.bosh@gatech.edu', 'Chris Bosh', 690, false, now() - interval '16 days'),
-    ('a0000001-0000-0000-0000-000000000008', 'tashard.choice@gatech.edu', 'Tashard Choice', 605, false, now() - interval '14 days'),
-    ('a0000001-0000-0000-0000-000000000009', 'derrick.morgan@gatech.edu', 'Derrick Morgan', 540, false, now() - interval '12 days'),
-    ('a0000001-0000-0000-0000-000000000010', 'morgan.burnett@gatech.edu', 'Morgan Burnett', 475, false, now() - interval '10 days'),
-    ('a0000001-0000-0000-0000-000000000011', 'dontae.harris@gatech.edu', 'Dontae Harris', 410, false, now() - interval '8 days'),
-    ('a0000001-0000-0000-0000-000000000012', 'shaq.mason@gatech.edu', 'Shaq Mason', 350, false, now() - interval '6 days'),
-    ('a0000001-0000-0000-0000-000000000013', 'adam.gotsis@gatech.edu', 'Adam Gotsis', 290, false, now() - interval '5 days'),
-    ('a0000001-0000-0000-0000-000000000014', 'marco.coleman@gatech.edu', 'Marco Coleman', 225, false, now() - interval '4 days'),
-    ('a0000001-0000-0000-0000-000000000015', 'pat.swilling@gatech.edu', 'Pat Swilling', 160, false, now() - interval '3 days')
-ON CONFLICT (id) DO NOTHING;
+-- Now update profiles with correct display names and points
+UPDATE profiles SET display_name = 'Buzz Yellowjacket', points = 1250, email = 'buzz.yellowjacket@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000001';
+UPDATE profiles SET display_name = 'George P. Burdell', points = 1100, email = 'george.burdell@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000002';
+UPDATE profiles SET display_name = 'Ramblin Wreck', points = 980, email = 'ramblin.wreck@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000003';
+UPDATE profiles SET display_name = 'Calvin Johnson', points = 875, email = 'calvin.johnson@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000004';
+UPDATE profiles SET display_name = 'Demaryius Thomas', points = 820, email = 'demaryius.thomas@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000005';
+UPDATE profiles SET display_name = 'Joe Hamilton', points = 755, email = 'joe.hamilton@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000006';
+UPDATE profiles SET display_name = 'Chris Bosh', points = 690, email = 'chris.bosh@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000007';
+UPDATE profiles SET display_name = 'Tashard Choice', points = 605, email = 'tashard.choice@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000008';
+UPDATE profiles SET display_name = 'Derrick Morgan', points = 540, email = 'derrick.morgan@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000009';
+UPDATE profiles SET display_name = 'Morgan Burnett', points = 475, email = 'morgan.burnett@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000010';
+UPDATE profiles SET display_name = 'Dontae Harris', points = 410, email = 'dontae.harris@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000011';
+UPDATE profiles SET display_name = 'Shaq Mason', points = 350, email = 'shaq.mason@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000012';
+UPDATE profiles SET display_name = 'Adam Gotsis', points = 290, email = 'adam.gotsis@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000013';
+UPDATE profiles SET display_name = 'Marco Coleman', points = 225, email = 'marco.coleman@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000014';
+UPDATE profiles SET display_name = 'Pat Swilling', points = 160, email = 'pat.swilling@gatech.edu' WHERE id = 'a0000001-0000-0000-0000-000000000015';
 
 
 -- ============================================

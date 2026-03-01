@@ -26,7 +26,17 @@ struct RewardsStoreView: View {
             }
         }
         .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack(spacing: 6) {
+                    Image(systemName: "gift.fill")
+                        .foregroundColor(GTTheme.techGold)
+                    Text("Rewards")
+                        .font(.headline.bold())
+                        .foregroundColor(GTTheme.techGold)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: { showRedemptions = true }) {
                     Image(systemName: "bag.fill")
